@@ -53,7 +53,7 @@ function initConverter() {
         <div class="converter-container">
             <h1>Конвертер систем счисления</h1>
             <div class="input-group">
-                <input type="text" id="numberInput" placeholder="Введите число">
+                <input type="text" id="numberInput" placeholder="Введите число" value="17">
                 <div class="base-selectors">
                     <div>
                         <label for="fromBase">Из системы:</label>
@@ -71,7 +71,7 @@ function initConverter() {
     `;
     
     // Заполняем select-ы вариантами оснований
-    const fillBaseOptions = (selectId) => {
+    const fillBaseOptions = (selectId, defaultValue) => {
         const select = document.getElementById(selectId);
         for (let i = 2; i <= 36; i++) {
             const option = document.createElement('option');
@@ -79,13 +79,11 @@ function initConverter() {
             option.textContent = i;
             select.appendChild(option);
         }
-        // Устанавливаем разумные значения по умолчанию
-        if (selectId === 'fromBase') select.value = 10;
-        if (selectId === 'toBase') select.value = 2;
+        select.value = defaultValue;
     };
     
-    fillBaseOptions('fromBase');
-    fillBaseOptions('toBase');
+    fillBaseOptions('fromBase', 10);  // По умолчанию: из 10-й системы
+    fillBaseOptions('toBase', 2);     // По умолчанию: в 2-ю систему
     
     // Обработчик конвертации
     document.getElementById('convertBtn').addEventListener('click', () => {
@@ -109,6 +107,9 @@ function initConverter() {
             `;
         }
     });
+    
+    // Автоматически запускаем конвертацию при загрузке
+    document.getElementById('convertBtn').click();
 }
 
 // Инициализируем при загрузке страницы
