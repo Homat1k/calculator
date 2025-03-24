@@ -1,12 +1,32 @@
 // Функция для конвертации числа между системами счисления
 function calc(number, fromBase, toBase) {
+    // Проверка на пустой ввод
+    if (!number || typeof number !== 'string' || number.trim() === '') {
+        throw new Error('Введите число');
+    }
+
+    // Проверка корректности основания
+    if (fromBase < 2 || fromBase > 36 || toBase < 2 || toBase > 36) {
+        throw new Error('Основание должно быть от 2 до 36');
+    }
+
+    // Проверка, что число соответствует указанной системе счисления
+    const validChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.substring(0, fromBase);
+    const regex = new RegExp(`^[${validChars}]+$`, 'i');
+    if (!regex.test(number)) {
+        throw new Error(`Число содержит недопустимые символы для системы с основанием ${fromBase}`);
+    }
+
     // Преобразуем число в десятичную систему
-    let decimalNumber = parseInt(number, fromBase);
-    
+    const decimalNumber = parseInt(number, fromBase);
+    if (isNaN(decimalNumber)) {
+        throw new Error('Не удалось преобразовать число');
+    }
+
     if (toBase === 10) {
         return decimalNumber.toString();
     }
-    
+
     const digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     let result = "";
     
@@ -15,21 +35,22 @@ function calc(number, fromBase, toBase) {
         return "0";
     }
     
+    let num = decimalNumber;
     // Преобразуем из десятичной в целевую систему
-    while (decimalNumber > 0) {
-        const remainder = decimalNumber % toBase;
+    while (num > 0) {
+        const remainder = num % toBase;
         result = digits[remainder] + result;
-        decimalNumber = Math.floor(decimalNumber / toBase);
+        num = Math.floor(num / toBase);
     }
     
     return result;
 }
 
-// Элементы интерфейса (имитация Streamlit)
+// Создание HTML-интерфейса
 document.body.innerHTML = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <h1>Конвертер систем счисления</h1>
-        <div id="output"></div>
+        <div id="output" style="min-height: 50px;"></div>
         <input type="text" id="numberInput" placeholder="Введите число" style="padding: 8px; width: 100%; margin-bottom: 10px;">
         <div style="display: flex; gap: 10px; margin-bottom: 10px;">
             <div style="flex: 1;">
@@ -56,14 +77,26 @@ function createBaseOptions() {
 
 // Обработчик кнопки
 document.getElementById('calculateBtn').addEventListener('click', function() {
-    const number = document.getElementById('numberInput').value;
+    const number = document.getElementById('numberInput').value.toUpperCase();
     const fromBase = parseInt(document.getElementById('fromBase').value);
     const toBase = parseInt(document.getElementById('toBase').value);
     
+    const output = document.getElementById('output');
+    output.innerHTML = '';
+    
     try {
         const result = calc(number, fromBase, toBase);
-        document.getElementById('output').innerHTML = `<p style="margin-top: 20px; padding: 10px; background-color: #f0f0f0; border-radius: 5px;">Результат: <strong>${result}</strong></p>`;
+        output.innerHTML = `
+            <div style="margin-top: 20px; padding: 15px; background-color: #f0f0f0; border-radius: 5px;">
+                <p><strong>Исходное число:</strong> ${number}<sub>${fromBase}</sub></p>
+                <p><strong>Результат:</strong> ${result}<sub>${toBase}</sub></p>
+            </div>
+        `;
     } catch (e) {
-        document.getElementById('output').innerHTML = `<p style="margin-top: 20px; padding: 10px; background-color: #ffdddd; border-radius: 5px;">Ошибка: ${e.message}</p>`;
+        output.innerHTML = `
+            <div style="margin-top: 20px; padding: 15px; background-color: #ffdddd; border-radius: 5px; color: #d32f2f;">
+                <strong>Ошибка:</strong> ${e.message}
+            </div>
+        `;
     }
 });
