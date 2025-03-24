@@ -1,83 +1,61 @@
 // Функция для конвертации числа между системами счисления
 function calc(number, fromBase, toBase) {
-    // Проверка на пустой ввод
-    if (!number || typeof number !== 'string' || number.trim() === '') {
-        throw new Error('Введите число');
-    }
+    try {
+        // Проверка на пустой ввод
+        if (!number || typeof number !== 'string' || number.trim() === '') {
+            throw new Error('Пожалуйста, введите число');
+        }
 
-    // Проверка корректности основания
-    if (fromBase < 2 || fromBase > 36 || toBase < 2 || toBase > 36) {
-        throw new Error('Основание должно быть от 2 до 36');
-    }
+        // Удаляем возможные пробелы и приводим к верхнему регистру
+        number = number.trim().toUpperCase();
 
-    // Проверка, что число соответствует указанной системе счисления
-    const validChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.substring(0, fromBase);
-    const regex = new RegExp(`^[${validChars}]+$`, 'i');
-    if (!regex.test(number)) {
-        throw new Error(`Число содержит недопустимые символы для системы с основанием ${fromBase}`);
-    }
+        // Проверка корректности основания
+        if (fromBase < 2 || fromBase > 36 || toBase < 2 || toBase > 36) {
+            throw new Error('Основание системы счисления должно быть от 2 до 36');
+        }
 
-    // Преобразуем число в десятичную систему
-    const decimalNumber = parseInt(number, fromBase);
-    if (isNaN(decimalNumber)) {
-        throw new Error('Не удалось преобразовать число');
-    }
+        // Проверка, что число соответствует указанной системе счисления
+        const validChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.substring(0, fromBase);
+        const regex = new RegExp(`^[${validChars}]+$`, 'i');
+        if (!regex.test(number)) {
+            throw new Error(`Число содержит недопустимые символы для системы с основанием ${fromBase}`);
+        }
 
-    if (toBase === 10) {
-        return decimalNumber.toString();
-    }
+        // Преобразуем число в десятичную систему
+        const decimalNumber = parseInt(number, fromBase);
+        if (isNaN(decimalNumber)) {
+            throw new Error('Не удалось преобразовать число. Проверьте правильность ввода.');
+        }
 
-    const digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let result = "";
-    
-    // Особый случай для нуля
-    if (decimalNumber === 0) {
-        return "0";
+        if (toBase === 10) {
+            return decimalNumber.toString();
+        }
+
+        const digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        let result = "";
+        
+        // Особый случай для нуля
+        if (decimalNumber === 0) {
+            return "0";
+        }
+        
+        let num = decimalNumber;
+        // Преобразуем из десятичной в целевую систему
+        while (num > 0) {
+            const remainder = num % toBase;
+            result = digits[remainder] + result;
+            num = Math.floor(num / toBase);
+        }
+        
+        return result;
+    } catch (e) {
+        throw e; // Перебрасываем ошибку для обработки в вызывающем коде
     }
-    
-    let num = decimalNumber;
-    // Преобразуем из десятичной в целевую систему
-    while (num > 0) {
-        const remainder = num % toBase;
-        result = digits[remainder] + result;
-        num = Math.floor(num / toBase);
-    }
-    
-    return result;
 }
 
-// Создание HTML-интерфейса
-document.body.innerHTML = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h1>Конвертер систем счисления</h1>
-        <div id="output" style="min-height: 50px;"></div>
-        <input type="text" id="numberInput" placeholder="Введите число" style="padding: 8px; width: 100%; margin-bottom: 10px;">
-        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-            <div style="flex: 1;">
-                <label for="fromBase">Основание вводимого числа:</label>
-                <select id="fromBase" style="padding: 8px; width: 100%;">${createBaseOptions()}</select>
-            </div>
-            <div style="flex: 1;">
-                <label for="toBase">Основание выводимого числа:</label>
-                <select id="toBase" style="padding: 8px; width: 100%;">${createBaseOptions()}</select>
-            </div>
-        </div>
-        <button id="calculateBtn" style="padding: 10px 15px; background-color: #4CAF50; color: white; border: none; cursor: pointer; width: 100%;">Посчитать</button>
-    </div>
-`;
-
-// Создание опций для select элементов (основания от 2 до 36)
-function createBaseOptions() {
-    let options = '';
-    for (let i = 2; i <= 36; i++) {
-        options += `<option value="${i}">${i}</option>`;
-    }
-    return options;
-}
-
-// Обработчик кнопки
+// Обработчик кнопки с улучшенным выводом ошибок
 document.getElementById('calculateBtn').addEventListener('click', function() {
-    const number = document.getElementById('numberInput').value.toUpperCase();
+    const number = document.getElementById('numberInput').value;
     const fromBase = parseInt(document.getElementById('fromBase').value);
     const toBase = parseInt(document.getElementById('toBase').value);
     
@@ -94,9 +72,10 @@ document.getElementById('calculateBtn').addEventListener('click', function() {
         `;
     } catch (e) {
         output.innerHTML = `
-            <div style="margin-top: 20px; padding: 15px; background-color: #ffdddd; border-radius: 5px; color: #d32f2f;">
-                <strong>Ошибка:</strong> ${e.message}
+            <div style="margin-top: 20px; padding: 15px; background-color: #ffebee; border-radius: 5px; color: #c62828; border: 1px solid #ef9a9a;">
+                <strong>Ошибка:</strong> ${e.message || 'Произошла неизвестная ошибка'}
             </div>
         `;
+        console.error('Ошибка преобразования:', e);
     }
 });
