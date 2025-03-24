@@ -1,1 +1,69 @@
-Hello world
+// Функция для конвертации числа между системами счисления
+function calc(number, fromBase, toBase) {
+    // Преобразуем число в десятичную систему
+    let decimalNumber = parseInt(number, fromBase);
+    
+    if (toBase === 10) {
+        return decimalNumber.toString();
+    }
+    
+    const digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let result = "";
+    
+    // Особый случай для нуля
+    if (decimalNumber === 0) {
+        return "0";
+    }
+    
+    // Преобразуем из десятичной в целевую систему
+    while (decimalNumber > 0) {
+        const remainder = decimalNumber % toBase;
+        result = digits[remainder] + result;
+        decimalNumber = Math.floor(decimalNumber / toBase);
+    }
+    
+    return result;
+}
+
+// Элементы интерфейса (имитация Streamlit)
+document.body.innerHTML = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1>Конвертер систем счисления</h1>
+        <div id="output"></div>
+        <input type="text" id="numberInput" placeholder="Введите число" style="padding: 8px; width: 100%; margin-bottom: 10px;">
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <div style="flex: 1;">
+                <label for="fromBase">Основание вводимого числа:</label>
+                <select id="fromBase" style="padding: 8px; width: 100%;">${createBaseOptions()}</select>
+            </div>
+            <div style="flex: 1;">
+                <label for="toBase">Основание выводимого числа:</label>
+                <select id="toBase" style="padding: 8px; width: 100%;">${createBaseOptions()}</select>
+            </div>
+        </div>
+        <button id="calculateBtn" style="padding: 10px 15px; background-color: #4CAF50; color: white; border: none; cursor: pointer; width: 100%;">Посчитать</button>
+    </div>
+`;
+
+// Создание опций для select элементов (основания от 2 до 36)
+function createBaseOptions() {
+    let options = '';
+    for (let i = 2; i <= 36; i++) {
+        options += `<option value="${i}">${i}</option>`;
+    }
+    return options;
+}
+
+// Обработчик кнопки
+document.getElementById('calculateBtn').addEventListener('click', function() {
+    const number = document.getElementById('numberInput').value;
+    const fromBase = parseInt(document.getElementById('fromBase').value);
+    const toBase = parseInt(document.getElementById('toBase').value);
+    
+    try {
+        const result = calc(number, fromBase, toBase);
+        document.getElementById('output').innerHTML = `<p style="margin-top: 20px; padding: 10px; background-color: #f0f0f0; border-radius: 5px;">Результат: <strong>${result}</strong></p>`;
+    } catch (e) {
+        document.getElementById('output').innerHTML = `<p style="margin-top: 20px; padding: 10px; background-color: #ffdddd; border-radius: 5px;">Ошибка: ${e.message}</p>`;
+    }
+});
